@@ -115,7 +115,7 @@ void setup() {
 //  attachInterrupt(BUTTON_INT, handleButton, FALLING);
 // Web server setup
 WiFi.mode(WIFI_STA);
-WiFi.begin("ici_maison", "E18E38980D"); //Connect to the WiFi network
+WiFi.begin("my_SSID", "MyPassword"); //Connect to the WiFi network
 
 while (WiFi.status() != WL_CONNECTED) { //Wait for connection
   delay(1000);
