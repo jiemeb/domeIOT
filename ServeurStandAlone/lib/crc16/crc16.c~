@@ -1,0 +1,47 @@
+
+
+static u16
+rfm_crc16_update(u16 crc, u8 b)
+{
+   int i=0;
+   
+   crc ^= b;
+   for (i = 0; i < 8; ++i) {
+      if (crc & 1)
+         crc = (crc >> 1) ^ 0xa001;
+      else
+         crc = (crc >> 1);
+   }
+   
+   return crc;
+}
+
+/*
+static void
+rfm_apply_crc16(struct rfm12_data* rfm12, unsigned char* ptr, unsigned len)
+{
+   u16 i, crc16 = ~0;
+   if (0 != rfm12->group_id)
+      crc16 = rfm_crc16_update(~0, rfm12->group_id);
+   for (i=0; i<len; i++)
+      crc16 = rfm_crc16_update(crc16, ptr[i]);
+   
+   // crc16
+   ptr[len] = crc16 & 0xFF;
+   ptr[len+1] = (crc16 >> 8) & 0xFF;
+}
+*/
+
+static void
+usigned short crc16( unsigned char* ptr, unsigned len)
+{
+   u16 i, crc16 = ~0;
+   
+   for (i=0; i<len; i++)
+      crc16 = rfm_crc16_update(crc16, ptr[i]);
+   
+   // crc16
+   //ptr[len] = crc16 & 0xFF;
+   //ptr[len+1] = (crc16 >> 8) & 0xFF;
+   return (crc16);
+}

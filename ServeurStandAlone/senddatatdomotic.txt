@@ -1,0 +1,117 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <DHT.h>
+#include <Adafruit_BMP085.h>
+
+#define DHTTYPE   DHT22       // DHT type (DHT11, DHT22)
+#define DHTPIN    D4          // Broche du DHT / DHT Pin
+
+const char* ssid     = "XXXXXXXX";
+const char* password = "XXXXXXXX";
+const char* host = "XXX.XXX.XXX.XXX";
+const int   port = 8080;
+const int   watchdog = 60000; // Fréquence d'envoi des données à Domoticz - Frequency of sending data to Domoticz
+unsigned long previousMillis = millis(); 
+
+DHT dht(DHTPIN, DHTTYPE);
+Adafruit_BMP085 bmp;
+HTTPClient http;
+
+void setup() {
+  Serial.begin(115200);
+  delay(10);
+  
+  if ( !bmp.begin() ) {
+    Serial.println("BMP180 KO!");
+    while (1);
+  } else {
+    Serial.println("BMP180 OK");
+  }
+  
+  Serial.setDebugOutput(true);  
+  Serial.println("Connecting Wifi...");
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+   
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.print(WiFi.localIP()); 
+}
+
+int value = 0;
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  if ( currentMillis - previousMillis > watchdog ) {
+    previousMillis = currentMillis;
+
+    if(WiFi.status() != WL_CONNECTED) {
+      Serial.println("WiFi not connected !");
+    } else {  
+      Serial.println("Send data to Domoticz");
+      
+      float t = dht.readTemperature();
+      float h = dht.readHumidity();
+      float pa = bmp.readPressure() / 100.0F;
+      
+      if ( isnan(t) || isnan(h) ) {
+        Serial.println("DHT KO");
+      } else {
+        int hum_stat;
+        int bar_for = 0;
+        if ( h > 70 ) {
+          hum_stat = 3;
+        } else if ( h < 30 ) {
+          hum_stat = 2; 
+        } else if ( h >= 30 & h <= 45 ) {
+          hum_stat = 0;
+        } else if ( h > 45 & h <= 70 ) {
+          hum_stat = 1;
+        }
+
+        if ( pa > 1030 ) {
+          bar_for = 1;  
+        } else if ( pa > 1010 & pa <= 1030 ) {
+          bar_for = 2;
+        } else if ( pa > 990 & pa <= 1010 ) {
+          bar_for = 3;
+        } else if ( pa > 970 & pa < 990 ) {
+          bar_for = 4;
+        }
+        
+        String url = "/json.htm?type=command&param=udevice&idx=12&nvalue=0&svalue=";
+        url += String(t); url += ";";
+        url += String(h); url += ";";
+        url += String(hum_stat); url += ";";
+        url += String(pa);url += ";";
+        url += String(bar_for);
+     
+        sendDomoticz(url);
+      }
+    }
+  }
+}
+
+void sendDomoticz(String url){
+  Serial.print("connecting to ");
+  Serial.println(host);
+  Serial.print("Requesting URL: ");
+  Serial.println(url);
+  http.begin(host,port,url);
+  int httpCode = http.GET();
+    if (httpCode) {
+      if (httpCode == 200) {
+        String payload = http.getString();
+        Serial.println("Domoticz response "); 
+        Serial.println(payload);
+      }
+    }
+  Serial.println("closing connection");
+  http.end();
+}

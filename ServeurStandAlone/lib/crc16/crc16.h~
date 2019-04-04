@@ -1,0 +1,12 @@
+
+#ifndef CRC16_H
+#define CRC16_H
+#define LIBRARY_VERSION_CRC16_H   "0.1.1"
+
+//static void
+//rfm_apply_crc16(struct rfm12_data* rfm12, unsigned char* ptr, unsigned len);
+
+static u16 rfm_crc16_update(u16 crc, u8 b);
+static usigned short crc16( unsigned char* ptr, unsigned len);
+
+#endif
