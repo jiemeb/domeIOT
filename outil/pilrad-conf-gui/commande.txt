@@ -1,0 +1,16 @@
+curl http://192.168.0.10/get --output toto
+
+wget -O toto -T 4  http://192.168.0.10/list?dir=/
+
+curl   http://192.168.0.10/list?dir=/
+ 
+for file in `ls -A1`; do curl -F "file=@$PWD/$file" 192.168.0.10/file; done
+
+curl -F "file=@event_domoticz.ini" 192.168.0.10/file
+  
+curl  http://192.168.0.10/fileRead?file=/event_domoticz.ini
+curl 192.168.0.10/fileDelete?file=/event_domoticz.ini
+
+
+ wget -O toto -T 4  http://192.168.0.10/order?order=031E01FF
+wget -O toto -T 4 "http://192.168.0.10/order?file=/bibliotheque&order=031E0A00"

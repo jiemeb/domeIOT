@@ -1,0 +1,26 @@
+
+:Debut	BM	00
+	IN	01
+	RB	02
+	IL	00
+	LM	00
+	LA	80
+	CC	12
+	FS	00
+	SB	02
+	LA	80
+	CC	12
+	FI	00
+	RB	02
+	EM	02
+	BM	01
+	LA	80
+	CC	20
+	FS	00
+	SB	02
+	EM	01
+	BM	02
+	EM	02
+	BM	03
+	EM	03
+	EM	03

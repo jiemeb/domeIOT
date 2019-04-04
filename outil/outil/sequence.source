@@ -1,0 +1,13 @@
+
+:Debut	BM	00
+	IN	80
+	SB	01
+	IN	81
+	RB	01
+	EM	00
+	BM	01
+	EM	01
+	BM	02
+	EM	02
+	BM	03
+	EM	03
