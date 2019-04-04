@@ -1,3 +1,5 @@
+#example de commande a envoyer au gateway sans interface graphique
+
 curl http://192.168.0.10/get --output toto
 
 wget -O toto -T 4  http://192.168.0.10/list?dir=/
