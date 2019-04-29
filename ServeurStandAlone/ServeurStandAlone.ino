@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <string.h>
-
+#include "private.h"
 
 // ***************************************************************************************
 // Here we find.
@@ -79,7 +79,7 @@ ESP8266WebServer server(80);   //Web server object. Will be listening in port 80
 // You can specify the time server pool and the offset (in seconds, can be
 // changed later with setTimeOffset() ). Additionaly you can specify the
 // update interval (in milliseconds, can be changed using setUpdateInterval() ).
-EasyNTPClient timeClient(ntpUDP, "fr.pool.ntp.org", 3600, 360000);
+EasyNTPClient timeClient(ntpUDP, "fr.pool.ntp.org", 7200, 360000);
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
@@ -115,7 +115,7 @@ void setup() {
 //  attachInterrupt(BUTTON_INT, handleButton, FALLING);
 // Web server setup
 WiFi.mode(WIFI_STA);
-WiFi.begin("my_SSID", "MyPassword"); //Connect to the WiFi network
+WiFi.begin(MY_ESSID,MY_PASSWORD); //Connect to the WiFi network
 
 while (WiFi.status() != WL_CONNECTED) { //Wait for connection
   delay(1000);
