@@ -4,13 +4,17 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266HTTPClient.h>
+#include <ArduinoOTA.h>
+#include <RemoteDebug.h>
 // WiFi information
 
 #include <stdio.h>
 #include <FS.h>
 #include "event_domoticz.h"
 #include "getFileLine.h"
+#include "constant.h"
 // Global variables
+extern RemoteDebug Debug;
 WiFiClient client;
 HTTPClient http;
 char equ_bit[29][8];
@@ -18,25 +22,25 @@ char equ_temp[29];
 
 void sendDomoticz(String url)
 {
-Serial.print("connecting to ");
-Serial.println(sendToHost);
-Serial.print("Requesting URL: ");
-Serial.println(url);
+DEBUG_PRINT("connecting to ");
+DEBUG_PRINTLN(sendToHost);
+DEBUG_PRINT("Requesting URL: ");
+DEBUG_PRINTLN(url);
 http.begin(sendToHost,sendToPort,url);
 int httpCode = http.GET();
 	if (httpCode) {
 		if (httpCode == 200) {
 			String payload = http.getString();
-			Serial.println("Domoticz response ");
-			Serial.println(payload);
+			DEBUG_PRINTLN("Domoticz response ");
+			DEBUG_PRINTLN(payload);
 		}
 		else
 		{
-			Serial.print("Domoticz response ");
-			Serial.println(httpCode);
+			DEBUG_PRINT("Domoticz response ");
+			DEBUG_PRINTLN(httpCode);
 	   }
 	}
-Serial.println("closing connection");
+DEBUG_PRINTLN("closing connection");
 http.end();
 }
 

@@ -400,7 +400,7 @@ SENDERID = TARGETID & 0x1F  ;
 }
 
 // internal function
-void RFM69::isr0() { _inISR = true; selfPointer->interruptHandler(); _inISR = false; }
+void  ICACHE_RAM_ATTR  RFM69::isr0() { _inISR = true; selfPointer->interruptHandler(); _inISR = false; }
 
 // internal function
 void RFM69::receiveBegin() {

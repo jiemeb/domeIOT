@@ -7,6 +7,8 @@
 #include "constant.h"
 #include <EasyNTPClient.h>
 #include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#include <RemoteDebug.h>
 //extern NTPClient timeClient ;
 extern EasyNTPClient timeClient;
 
@@ -31,7 +33,7 @@ int jee_id_all = 0x1F; // 31 it's promiscous
 struct {uint8_t card ;uint8_t bit; uint8_t etat;time_t time;} buffeur_antiboucle[ANTI_BOUCLE_LEN];
 int ibuffeur_antiboucle = 0 ;
 extern RFM69 radio ;
-
+extern RemoteDebug Debug;
 
 // Get information from Internet
 
@@ -57,13 +59,13 @@ int   i;
 				// Start process reading on RFMB12
 
 
-   	//----------------------- lecture Fifo ------------------------------------//
+  //----------------------- lecture Fifo ------------------------------------//
 	//		0		1		2	3	4	5
-	// Ibuf = enth of tansmit,Destination-Byte,LOrder , Value , Value 2,Value 3
-//	uint8_t  ibuf[RF12_MAX_SLEN+1], obuf[RF12_MAX_RLEN+1];
+	// Ibuf = lenth of tansmit,Destination-Byte,LOrder , Value , Value 2,Value 3
+  //	uint8_t  ibuf[RF12_MAX_SLEN+1], obuf[RF12_MAX_RLEN+1];
 	//int status;
+  //  	 len = read(fd_rfm12_in, ibuf, 4);
 
-//  	 len = read(fd_rfm12_in, ibuf, 4);
  	if (len > 0) {
 		if (ibuf[1] < 31)
 		ibuf[1]|=  RFM12B_JEE_HDR_DST_BIT ; // Jeednode id destination should be RFM12B_JEE_HDR_DST_BIT & 0x1F to set destination node
@@ -89,13 +91,13 @@ int   i;
         {
 
           sprintf(tempo," [%d] %X ",i, ibuf[i]);
-          Serial.print(tempo);
+          DEBUG_PRINT(tempo);
 			  }
-      Serial.print(" \n");
+      DEBUG_PRINT(" \n");
             delay(TIME_BEFORE_SEND);
       radio.send(jee_id_all,(const void*)&ibuf[2],4,0);
 //			status =   write(rfm12_fd, ibuf, 6);
-//			Serial.print("W %d\n",status);
+//			DEBUG_PRINT("W %d\n",status);
    	//	  usleep (TIME_AFTER_SEND);
 		break ;
 		case GET_TEMP :
@@ -104,18 +106,18 @@ int   i;
 		case RESET_BYTE :	//0
 
 		  sprintf(tempo,"pret a emettre %d --->",len);
-      Serial.print(tempo);
+      DEBUG_PRINT(tempo);
 		    for (i=0; i<len; i++)
       {
     		  sprintf(tempo," [%d] %X ",i, ibuf[i]);
-    		  Serial.print(tempo);
+    		  DEBUG_PRINT(tempo);
       }
-      Serial.println(" ");
+      DEBUG_PRINTLN(" ");
             delay(TIME_BEFORE_SEND);
       radio.send(ibuf[1],(const void*)&ibuf[2],len-2,0);
       delay(TIME_AFTER_SEND);
       //		status =write(rfm12_fd, ibuf, len-1);
-	//	  Serial.print("W %d\n",status);
+	//	  DEBUG_PRINT("W %d\n",status);
 	   //	usleep(TIME_AFTER_SEND);
   	 break;
 
@@ -146,7 +148,7 @@ int   i;
 				            if (((buffeur_antiboucle[k].etat == 1) && (  ibuf[2] == SET_BIT )) || ((buffeur_antiboucle[k].etat == 0) && ( ibuf[2] == RESET_BIT )))
 						              { // Bingo do nothing
 						                      sprintf(tempo,"antiboucle %x \n\r",ibuf[1]);
-                                  Serial.print(tempo);
+                                  DEBUG_PRINT(tempo);
 						                      noBoucle = 0;
 						                      break ;
 						               }
@@ -165,13 +167,13 @@ int   i;
         len = 5 ;
 		//read(fd_rfm12_in, &ibuf[4], 1);
     sprintf(tempo,"pret a emettre %d --->",len);
-    Serial.print(tempo);
+    DEBUG_PRINT(tempo);
       for (i=0; i<len; i++)
     {
         sprintf(tempo," [%d] %X ",i, ibuf[i]);
-        Serial.print(tempo);
+        DEBUG_PRINT(tempo);
     }
-    Serial.println(" ");
+    DEBUG_PRINTLN(" ");
 		if (noBoucle ) // Antiboucle ON
 		{
             delay(TIME_BEFORE_SEND);
@@ -189,11 +191,11 @@ int   i;
 		//len +=2;
 		//read(fd_rfm12_in, &ibuf[4], 2);
     sprintf(tempo,"pret a emettre %d --->",len);
-    Serial.print(tempo);
+    DEBUG_PRINT(tempo);
       for (i=0; i<len; i++)
     {
         sprintf(tempo," [%d] %X ",i, ibuf[i]);
-        Serial.print(tempo);
+        DEBUG_PRINT(tempo);
     }
           delay(TIME_BEFORE_SEND);
   radio.send(ibuf[1],(const void*)&ibuf[2],len-2,0);
@@ -203,7 +205,7 @@ int   i;
 delay(TIME_AFTER_SEND);
 		break;
 
-    case SET_CHRONO :Serial.print("Set chrono ");
+    case SET_CHRONO :DEBUG_PRINT("Set chrono ");
 
 		int index,jour,heure,minutes,reset,set,c;
 
@@ -211,7 +213,7 @@ delay(TIME_AFTER_SEND);
 
  		if( ( gline.getPos()) < 0)
      {
-       Serial.print("pas de fichier "+file);
+       DEBUG_PRINT("pas de fichier "+file);
        break;
      }
 		c=0;
@@ -220,7 +222,7 @@ delay(TIME_AFTER_SEND);
       		if( 6 != sscanf(tempo, "%d %d %d %d %x %x\n",&index, &jour,&heure,&minutes,&reset,&set))
 		          break;
       		sprintf(tempo,"index %d Jour %d heure %d minute %d reset %X set %X\n",index, jour,heure,minutes,reset,set);
-          Serial.print(tempo);
+          DEBUG_PRINT(tempo);
        ibuf[0] = 0 ;
   		 ibuf[2] = SET_CHRONO;
  			 ibuf[3] = (uint8_t) index;
@@ -234,9 +236,9 @@ delay(TIME_AFTER_SEND);
 			for (i=0; i<8; i++)
             {
                 sprintf(tempo," [%d] %X ",i, ibuf[i]);
-                Serial.print(tempo);
+                DEBUG_PRINT(tempo);
             }
-			Serial.print(" \n");
+			DEBUG_PRINT(" \n");
       delay(TIME_BEFORE_SEND);
       radio.send(ibuf[1],(const void*)&ibuf[2],6,0);
 
@@ -248,7 +250,7 @@ delay(TIME_AFTER_SEND);
     		 }
 
 		      sprintf(tempo,"nombre de chrono %d \n",c);
-          Serial.print(tempo);
+          DEBUG_PRINT(tempo);
 
     break ;
 
@@ -269,16 +271,16 @@ delay(TIME_AFTER_SEND);
 			for (i=0; i<6; i++)
       {
         sprintf(tempo," [%d] %X ",i, ibuf[i]);
-        Serial.print(tempo);
+        DEBUG_PRINT(tempo);
       }
-			Serial.print(" \n");
+			DEBUG_PRINT(" \n");
             delay(TIME_BEFORE_SEND);
       radio.send(ibuf[1],(const void*)&ibuf[2],4,0);
       delay(TIME_AFTER_SEND);
 
 		break ;
 
-		case SET_PROGRAMME :  Serial.print("Set sequence ");
+		case SET_PROGRAMME :  DEBUG_PRINT("Set sequence ");
   {
 		int index1,op1,data1,op2,data2;
 
@@ -287,7 +289,7 @@ delay(TIME_AFTER_SEND);
 
    if( ( gline.getPos()) < 0)
     {
-      Serial.print("pas de fichier "+file);
+      DEBUG_PRINT("pas de fichier "+file);
       break;
     }
 
@@ -300,7 +302,7 @@ delay(TIME_AFTER_SEND);
       		if( 2 != sscanf(tempo, "%x %x\n",&op2,&data2))
 				break;
       		sprintf(tempo,"index %d op1 %X data1 %X op2 %X data2 %X \n",index1,op1,data1,op2,data2);
-          Serial.print(tempo);
+          DEBUG_PRINT(tempo);
 			   ibuf[0] = 0 ;
   			 ibuf[2] = SET_CHRONO;
  			   ibuf[3] = (uint8_t) index1+64;
@@ -313,9 +315,9 @@ delay(TIME_AFTER_SEND);
 		for (i=0; i<8; i++)
     {
       sprintf(tempo," [%d] %X ",i, ibuf[i]);
-      Serial.print(tempo);
+      DEBUG_PRINT(tempo);
     }
-		  Serial.print(" \n");
+		  DEBUG_PRINT(" \n");
             delay(TIME_BEFORE_SEND);
       radio.send(ibuf[1],(const void*)&ibuf[2],6,0);
 	//	 status=write(rfm12_fd, ibuf, 8);
@@ -324,8 +326,8 @@ delay(TIME_AFTER_SEND);
         delay(TIME_AFTER_SEND);
 		  index1+= 1;
     		 }
-		Serial.print("nombre de sequence ");
-    Serial.println(index1);
+		DEBUG_PRINT("nombre de sequence ");
+    DEBUG_PRINTLN(index1);
 		break ;
   }
 
@@ -334,9 +336,9 @@ delay(TIME_AFTER_SEND);
 		for (i=0; i<len; i++)
     {
       sprintf(tempo," [%d] %X ",i, ibuf[i]);
-      Serial.print(tempo);
+      DEBUG_PRINT(tempo);
     }
-			  Serial.print("Ordre inconnu \r\n");
+			  DEBUG_PRINT("Ordre inconnu \r\n");
 	//		  continue ;
 
 } // end sxitvh
@@ -371,19 +373,19 @@ void getRfm(volatile uint8_t *obuf,volatile int len,volatile uint8_t senderID)
 //        timeClient.update();
         tt= timeClient.getUnixTime();
 	         	sprintf(tempo,"%s", ctime(&tt));
-            Serial.print(tempo);
+            DEBUG_PRINT(tempo);
 	         	sprintf(tempo,"\n %d bytes read Hexa ", len);
-           Serial.print(tempo);
+           DEBUG_PRINT(tempo);
 	         	for (i=0; i<len; i++) {
-	            		Serial.print(obuf[i],HEX);
-                  Serial.print(" ");
+	            		DEBUG_PRINT2(obuf[i],HEX);
+                  DEBUG_PRINT(" ");
 		         			}
-	         	Serial.print(" Dec ");
+	         	DEBUG_PRINT(" Dec ");
 	         	for (i=0; i<len; i++) {
-	            		Serial.print(obuf[i],DEC);
-                  Serial.print(" ");
+	            		DEBUG_PRINT2(obuf[i],DEC);
+                  DEBUG_PRINT(" ");
 	         			}
-	  		Serial.print("\n");
+	  		DEBUG_PRINT("\n");
 
 	// Send information to Domoticz
 	//exemple
@@ -400,7 +402,7 @@ void getRfm(volatile uint8_t *obuf,volatile int len,volatile uint8_t senderID)
 			if ( obuf[0] == GET_TIME )
 				{
 
-				   Serial.print("Set time ");
+				   DEBUG_PRINT("Set time ");
 		  			//time (&tt);
 //            timeClient.update();
             tt= timeClient.getUnixTime();
@@ -414,7 +416,7 @@ void getRfm(volatile uint8_t *obuf,volatile int len,volatile uint8_t senderID)
 
 				for (i=0; i<6; i++)
             			{	sprintf(tempo," [%d] %X ",i, ibuf[i]);
-                      Serial.print(tempo);
+                      DEBUG_PRINT(tempo);
                     }
 
 			//	sleep(5);
