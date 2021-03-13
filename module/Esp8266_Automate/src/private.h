@@ -1,0 +1,5 @@
+#define WIFI_ESSID "ici_maison"
+#define WIFI_PASSWORD  "E18E38980D"
+#define WIFI_ESSID1 "ici_maison_EXT"
+#define WIFI_PASSWORD1  "E18E38980D"
+#define NAME_GATEWAY "gatewayRFM"
