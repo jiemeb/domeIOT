@@ -20,7 +20,7 @@ extern void  loopFSBrowser(void);
 extern bool FormatFSBrowser(void);
 
 extern void setupWifiSerial(void);
-extern void loopWifiSerial(void);
+extern void loopWifiSerial(void * pvParameters);
 
 extern  void transformOrder ( volatile uint8_t  *ibuf, int len, String file) ;
 // thread for reading from fm
@@ -98,6 +98,8 @@ WebServer server(80);   //Web server object. Will be listening in port 80 (defau
 // update interval (in milliseconds, can be changed using setUpdateInterval() ).
 EasyNTPClient timeClient(ntpUDP, "fr.pool.ntp.org", 7200, 360000);
 RemoteDebug Debug;
+WiFiClient client;
+TaskHandle_t TaskLoopWifiSerial;
 
 void connectToWifi()
 {  // Wait for WIFI connection
@@ -228,9 +230,18 @@ void setup() {
 // Wifi Serial init 
  setupWifiSerial();
 
+  xTaskCreatePinnedToCore(
+                    loopWifiSerial,   /* Task function. */
+                    "TaskLoopWifiSerial",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &TaskLoopWifiSerial,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */   
+
 }
 
-WiFiClient client;
+
 
 void loop() {
   // Handel OTA et Debug
@@ -244,9 +255,7 @@ void loop() {
   Debug.handle();
 
 
-loopWifiSerial();
-
-
+//loopWifiSerial();
 
 #ifdef USE_WDT
   wdt_reset();
@@ -264,7 +273,7 @@ loopWifiSerial();
   // Handle request
   server.handleClient();    //Handling of incoming requests
   delay(3);
-  loopWifiSerial();
+  //loopWifiSerial();
   //Blink(LED, 500, 3);
   if (!digitalRead(LED))
   {

@@ -77,12 +77,18 @@ void setupWifiSerial(void)
 WiFiClient clientSerial;
 
 
-void loopWifiSerial(void)
+void loopWifiSerial(void * pvParameters)
 {
-  int bytes_read;
+    int bytes_read;
   uint8_t net_buf[BUFFER_SIZE+1];
   uint8_t serial_buf[BUFFER_SIZE+1];
 
+  Serial.print("TaskWifiSerial running on core ");
+  Serial.println(xPortGetCoreID());
+
+
+  while (true)
+ {
 
  if (WiFi.status() != WL_CONNECTED) {
     // we've lost the connection, so we need to reconnect
@@ -144,5 +150,6 @@ void loopWifiSerial(void)
  else {
      clientSerial.stop();
   }
-
+delay(3);
+ }
 }
