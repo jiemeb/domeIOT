@@ -1,0 +1,70 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/home/jm/Arduino266/radiateurJeelibTempAutomate/include",
+                "/home/jm/Arduino266/radiateurJeelibTempAutomate",
+                "/home/jm/Arduino266/radiateurJeelibTempAutomate/lib/jeelib",
+                "/home/jm/Arduino266/radiateurJeelibTempAutomate/lib/EEPROM",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/cores/tiny",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/variants/tinyX4",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/ATTinyCore/src",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/EEPROM",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/SPI",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Servo/src",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Servo_ATTinyCore/src",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/SoftwareSerial",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Wire/src",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/tinyNeoPixel",
+                "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/tinyNeoPixel_Static",
+                "/home/jm/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/home/jm/Arduino266/radiateurJeelibTempAutomate/include",
+                    "/home/jm/Arduino266/radiateurJeelibTempAutomate",
+                    "/home/jm/Arduino266/radiateurJeelibTempAutomate/lib/jeelib",
+                    "/home/jm/Arduino266/radiateurJeelibTempAutomate/lib/EEPROM",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/cores/tiny",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/variants/tinyX4",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/ATTinyCore/src",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/EEPROM",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/SPI",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Servo/src",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Servo_ATTinyCore/src",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/SoftwareSerial",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/Wire/src",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/tinyNeoPixel",
+                    "/home/jm/.platformio/packages/framework-arduino-avr-attiny/libraries/tinyNeoPixel_Static",
+                    "/home/jm/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50101",
+                "ARDUINO_AVR_ATTINYX4",
+                "F_CPU=8000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATtiny84__",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "/home/jm/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=attiny84",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}

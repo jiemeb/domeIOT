@@ -14,5 +14,5 @@ curl  http://192.168.0.10/fileRead?file=/event_domoticz.ini
 curl 192.168.0.10/fileDelete?file=/event_domoticz.ini
 
 
- wget -O toto -T 4  http://192.168.0.10/order?order=031E01FF
+wget -O toto -T 4  http://192.168.0.10/order?order=031E01FF
 wget -O toto -T 4 "http://192.168.0.10/order?file=/bibliotheque&order=031E0A00"

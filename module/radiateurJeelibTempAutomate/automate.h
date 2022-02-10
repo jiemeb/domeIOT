@@ -31,7 +31,7 @@ public:
   volatile unsigned char  newMinutes;
   volatile unsigned char  holdSecondes ;
 
- volatile unsigned char markers;
+ volatile unsigned short markers;             // 16 Bit markers
 
   volatile unsigned short minutes;
   volatile unsigned short holdMinutes;
@@ -51,5 +51,6 @@ public:
   char resetEeprom ();
   void live( );
   void setup ();
+  void send (volatile unsigned char state ,volatile unsigned char data);
 
 };

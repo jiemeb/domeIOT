@@ -6,14 +6,14 @@ extern volatile temptx temptxIn;
 extern uint8 cardID;
 
 
- const char  t_in [SIZE_IO]=  {4,5,12,14,-1,-1,-1,-1 };          // output could be read.
-//  7,8,0,9,10,-1,-1,-1 };          // output could be read.
+ const char  t_in [SIZE_IO]=  {4,5,12,14, 0xFF,0xFF,0xFF,0xFF };          // output could be read.
+//  7,8,0,9,10,0xFF,0xFF,0xFF };          // output could be read.
 
 static const char   t_out [SIZE_IO]= {
- 4,5,-1,-1,-1,-1,-1,-1 };
-//    7,8,0,-1,-1,-1,-1,-1 };
+ 4,5,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };
+//    7,8,0,0xFF,0xFF,0xFF,0xFF,0xFF };
 static const char   t_ai [SIZE_IO]= {     // Futur use
-  0,-1,-1,-1,-1,-1,-1,-1 };          // Futur use
+  0,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF };          // Futur use
 
 class Automate
 {
@@ -24,14 +24,14 @@ public:
   // FF etant non asigné sinon puissancede 2 du bit
   // ce tableau pourrait etre en eeprom.
 
-//MilliTimer secondeTimer;
+
   volatile unsigned char myNode;              // Node of my card
   volatile unsigned char jour;                // Jour Lundi = 1 ;
   volatile unsigned char secondes ;
   volatile unsigned char  newMinutes;
   volatile unsigned char  holdSecondes ;
 
- volatile unsigned char markers;
+ volatile unsigned short markers;             // 16 Bit markers
 
   volatile unsigned short minutes;
   volatile unsigned short holdMinutes;
@@ -51,5 +51,6 @@ public:
   char resetEeprom ();
   void live( );
   void setup ();
+  void send (volatile unsigned char state ,volatile unsigned char data);
 
 };

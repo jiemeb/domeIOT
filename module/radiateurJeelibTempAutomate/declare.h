@@ -1,6 +1,6 @@
 
-#define SIGNATURE 204                     // Version release
-#define TimeBeforeSend 320
+#define SIGNATURE 206                     // Version release
+#define TimeBeforeSend 50
 #define NODE_ID_TO_BE_DEFINE 30
 #define SEND_TO_ALL 0x1F
 #define SIZE_IO 8

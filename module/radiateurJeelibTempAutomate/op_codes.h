@@ -13,7 +13,7 @@
 #define SB	0x9			/* Mise a 1 bit si LCR = 1 	*/
 #define RB	0xA			/* Mise a 0 bit si LCR = 0	*/
 #define OT	0xB			/* LCR -> Bit                	*/
-#define LM	0xC			/* si LCR=0  retour sur -data	*/
+#define LM	0xC			/* si LCR=1 end module LCR=0  goto next	*/
 #define TC	0xD			/* Attente sur Temps		*/
 #define BU	0xE			/* Branchement sans condittion	*/
 #define BT	0xF			/* Branchement si LCR = 1	*/
@@ -64,6 +64,10 @@
 #define PL	0x51		/* Impression Date et Heure		*/
 #define	EP	0x52		/* acquisition decimal dans reg		*/
 #define	PR	0x53		/* Impression Message Indexe sur reg    */
+
+#define I1  0x55        /* inform to all Bit 1              */
+#define I0  0x56        /* inform to all Bit 0              */
+#define IC  0x57        /* Inform Temperature C°          */
 
 /* definition des codes synchro taches		*/
 

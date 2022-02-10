@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* 		Programme VMAUT release le 13/05/93			*/
-/*		Vers 5.1 pour Psos+ by JMB              */ 
+/*		Vers 5.1 pour Psos+ by JMB              */
 /* now for attiny 			*/
 /*		JMB		Completly rewrited					*/
 /*----------------------------------------------------------------------*/
@@ -16,13 +16,15 @@
 //extern SoftwareSerial Serial; // RX, TX
 extern Automate A;
 
-#define DEBUG1
+
+//#define SDEBUG
+//#define SDEBUG1
 
 void sequenceur::setup()
 {
   char j ;
-	char i ;
-        
+	unsigned char i ;
+
 	for ( j = 0,i = 0;j < SEQUENCE_SIZE ; j += SIZE_INSTRUCTION)
 	{
 		if (EEPROM.read(SEQUENCE+j)== BM) // Find Begin
@@ -35,11 +37,11 @@ void sequenceur::setup()
 		module[i].pas = 0xff;
 		for (short origine = (j+SEQUENCE); j < SEQUENCE_SIZE ; j += SIZE_INSTRUCTION)
 			{
-			
+
 			if (EEPROM.read(SEQUENCE+j)== EM)
 				{
 				module[i].pas = origine;
-#ifdef DEBUG1
+#ifdef SDEBUG1
  Serial.print((F("S I ")));
  Serial.println(origine,DEC);
 #endif
@@ -48,17 +50,17 @@ void sequenceur::setup()
 				}
 
 			}
-		
+
 		if (j == SEQUENCE_SIZE  || i >= NOMBRE_MODULE)
 				break ;
 		}
-	        else 
-                {    
+	        else
+                {
                     break ;
                 }
 	}
 
-    
+
 }
 
 void sequenceur::live()
@@ -73,7 +75,7 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
                 continue;
               }
 	char stay_on = 1 ;
-#ifdef DEBUG
+#ifdef SDEBUG
  Serial.print((F("S B ")));
  Serial.println(i,DEC);
 #endif
@@ -81,13 +83,13 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 
 	while (stay_on ) // loop on module
 	{
-        char data = EEPROM.read(module[i].pas_courant+pas_module+1);
- #ifdef DEBUG
+        char data = EEPROM.read(module[i].pas_courant+pas_module+1);  // get data of order
+ #ifdef SDEBUG
  Serial.print((F("S Bc ")));
  Serial.println(EEPROM.read(module[i].pas_courant+pas_module),HEX);
  Serial.println(data,HEX);
 #endif
-	switch (EEPROM.read(module[i].pas_courant+pas_module))
+	switch (EEPROM.read(module[i].pas_courant+pas_module))              // switch order
 		{
 		case EM:                     // End
     case BE:                    // Got to End
@@ -100,66 +102,84 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 		module[i].acr = 0;
 		module[i].time = 0;
 		break;
-    
+
     case IN:
 		module[i].lcr = A.readBit(data) ;       /* Entree bit dans Logi. Reg	*/
 		break;
-    
+
     case CI:
 		module[i].lcr = ~A.readBit(data)& 0x1;  /* Entree Complementer dans LCR	*/
 		break;
-    
+
     case AN:
 		module[i].lcr &= A.readBit(data);       /* ET logique entre Bit et LCR	*/
 		break;
-    
+
     case CA:
 		module[i].lcr &= ~A.readBit(data)& 0x1; /* ET Complementer  Bit et LCR	*/
 		break;
-    
+
     case OR:
 		module[i].lcr |= A.readBit(data);       /* OU logique entre Bit et LCR	*/
 		break;
     case CO:
 		module[i].lcr |= ~A.readBit(data) & 0x1; /* OU Complementer  Bit et LCR	*/
 		break;
-    
+
     case XO:
-		module[i].lcr  ^= ~A.readBit(data) & 0x1; /* OU Exclusif entre Bit et LCR	*/
+		module[i].lcr  ^= A.readBit(data) & 0x1; /* OU Exclusif entre Bit et LCR	*/
 		break;
-    
+
     case LI:
 		module[i].lcr  = 0x1; /* Forcage du LCR             	*/
 		break;
-    
+
     case SB:              /* Mise a 1 bit si LCR = 1 	*/
-		if (module[i].lcr) 
+		if (module[i].lcr)
          A.setBit (data);
 		break;
-    
+
     case RB:              /* Mise a 0 bit si LCR = 1	*/
-		if (module[i].lcr) 
+		if (module[i].lcr)
        A.resetBit (data);
 		break;
-    
+
     case OT:              /* Mise a 0 bit si LCR = 1	*/
-		if (module[i].lcr) 
+		if (module[i].lcr)
       A.setBit (data);
-    else      
+    else
       A.resetBit (data);
 		break;
+/* Inform Master   */
+
+    case I1:              /*Send master Bit set si LCR = 1	*/
+    if (module[i].lcr)
+      A.send (1,data);
+    break;
+
+    case I0:            /*Send master Bit reset  si LCR = 1	*/
+    if (module[i].lcr)
+      A.send (0,data);
+    break;
+
+
+    
+    case IC:
+     data = temptxIn.temp / 10 ;     /* Load  Accu  immediat  */
+     A.send (2,data);     
+    break;
 
 /*   Time and Jump */
 
     case LM:              /* si LCR=0  retour sur -data	*/
-		if (module[i].lcr == 0) 
+		if (module[i].lcr == 0)
     {
  		module[i].pas_courant = 0  ;
 		stay_on = 0;
-		continue ;    
-    }           
+		continue ;
+    }
 		break;
-    
+
     case TC:
     if (module[i].lcr)
     {
@@ -167,7 +187,7 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
     stay_on = 0;
 		}
     break;
-    
+
     case BU:
 		module[i].pas_courant  = (data*SIZE_INSTRUCTION) -SIZE_INSTRUCTION; /* Branchement sans condittion	*/
 		break;
@@ -175,12 +195,12 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 		if (module[i].lcr)
                         module[i].pas_courant  = (data*SIZE_INSTRUCTION) -SIZE_INSTRUCTION; //* Branchement si LCR = 1	*/
 		break;
-    
+
     case BF:
 		if (module[i].lcr == 0)
                         module[i].pas_courant  = (data*SIZE_INSTRUCTION) -SIZE_INSTRUCTION; //* Branchement si LCR = 0	*/
 		break;
-    
+
     case IL:
 		module[i].lcr = ~module[i].lcr & 1 ;                     /* Complemente le LCR   	*/
 		break;
@@ -195,35 +215,35 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 		case FS:                                /* Put LCR = 1 if ACR = 2  Supe    */
 		module[i].lcr = (module[i].acr == 1) ? 1 : 0  ;
 		break;
-		
+
 		case FE:                                /* Put LCR = 1 if ACR = 0  Equal      */
 		module[i].lcr = (module[i].acr == 0) ? 1 : 0  ;
 		break;
-		
+
 		case FI:                                /* Put LCR = 1 if ACR = 2  Infe    */
 		module[i].lcr = (module[i].acr == 2) ? 1 : 0  ;
 		break;
-    
+
     case AC:
 		module[i].aad += data ;                  /*	Add	Accu	 immediat	*/
     module[i].acr =(module[i].aad > 0) ? 1 : (module[i].aad < 0) ? 2 : 0 ;
 		break;
-    
+
     case SC:
 		module[i].aad -= data ;                   /*	Subs 	Accu 	immediat	*/
     module[i].acr =(module[i].aad > 0) ? 1 : (module[i].aad < 0) ? 2 : 0 ;
 		break;
-    
+
     case DC:
 		module[i].aad /= data ;                   /*	Div 	Accu 	immediat	*/
     module[i].acr =(module[i].aad > 0) ? 1 : (module[i].aad < 0) ? 2 : 0 ;
 		break;
-    
+
     case MC:
 		module[i].aad *= data ;                   /*	Multi 	Accu 	immediat	*/
     module[i].acr =(module[i].aad > 0) ? 1 : (module[i].aad < 0) ? 2 : 0 ;
 		break;
-    
+
     case LA:
     if (data & 0x80 )
 		      module[i].aad = temptxIn.temp / 10 ;     /*	Load 	Accu 	immediat	*/
@@ -259,7 +279,7 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 		stay_on = 0;
                 }
 		}
-#ifdef DEBUG
+#ifdef SDEBUG
  Serial.print((F("End M ")));
  Serial.println(i,DEC);
 #endif
@@ -267,7 +287,7 @@ for (unsigned char i = 0 ;( i < NOMBRE_MODULE && module[i].pas != 0xFF ) ; i++)
 
 	}
 
-#ifdef DEBUG
+#ifdef SDEBUG
  Serial.print((F("End S ")));
 #endif
 

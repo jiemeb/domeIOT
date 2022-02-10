@@ -13,9 +13,9 @@
 //extern SoftwareSerial Serial; // RX, TX
 
 extern class sequenceur S;
-//#define DEBUG
-//#define DEBUG1
-#define DEBUG2
+//#define ADEBUG
+//#define ADEBUG1
+#define ADEBUG2
 /*--------------------------------------------------------BYTE Manipulation ---------------------------------------*/
 
 char Automate::resetByte(volatile unsigned char  value )
@@ -71,10 +71,10 @@ char  Automate::readByte( )
 
   }
 
-#ifdef DEBUG1
+#ifdef ADEBUG1
   Serial.print((F("Valeur read_")));
   Serial.println(value,HEX);
-#endif     
+#endif
 
   return (value);
 }
@@ -133,7 +133,7 @@ else
     value=0;
   }
 }
-#ifdef DEBUG1
+#ifdef ADEBUG1
   Serial.print((F ("ReadBit")));
   Serial.println(value,HEX);
 #endif
@@ -145,7 +145,7 @@ else
 
 char Automate::setTime(volatile unsigned short  value,char valSecondes ) // Jour de 0-6 + Minutes du jour , secondes
 {
-#ifdef DEBUG1
+#ifdef ADEBUG1
   Serial.print((F ("SetTimer __")));
   Serial.println(value,HEX);
 #endif
@@ -174,7 +174,7 @@ char Automate::setTime(volatile unsigned short  value,char valSecondes ) // Jour
           countSecondes = (1000 * real) / reference ;
           if (countSecondes < 850 || countSecondes > 1300)
                       countSecondes = 1000;
-#ifdef DEBUG1
+#ifdef ADEBUG1
  	 Serial.print(F ("New Count__"));
  	 Serial.println(countSecondes,DEC);
 #endif
@@ -196,7 +196,7 @@ char Automate::readAByte( volatile unsigned char  value )
     return(-1);
   value=analogRead(t_ai[value]);
 
-#ifdef DEBUG1
+#ifdef ADEBUG1
   Serial.print(F ("analogRead"));
   Serial.println(value,HEX);
 #endif
@@ -232,7 +232,7 @@ void Automate::live()
     if( newMinutes) // Changement de 1 Minutes
     {
       newMinutes  = 0;
-#ifdef DEBUG
+#ifdef ADEBUG
             Serial.print((F ("J ")));
             Serial.println(jour,HEX);
             Serial.println(minutes,HEX);
@@ -247,7 +247,7 @@ void Automate::live()
 
           if ((((unsigned)(EEPROM.read(i) & 0x0F) <<8 )|(unsigned)  EEPROM.read(i+1)) == minutes)
           {
-#ifdef DEBUG1
+#ifdef ADEBUG1
             Serial.print((F ("Trouver")));
             Serial.println(i,DEC);
 #endif
@@ -262,7 +262,7 @@ void Automate::live()
     {
       if ((calibrationTime == CALIBRATION_TIME) || (calibrationTime == 2)) //Get 1498 Secondes
       {
-#ifdef DEBUG1
+#ifdef ADEBUG1
       Serial.println((F ("Demande Heure"))); // get time
 #endif
       char demandeHeure[]={GET_TIME,0};
@@ -295,50 +295,50 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
   unsigned char mes[7] ;
     mes[INDEX_ORDER]=message [COMMAND];
     mes[INDEX_VALUE]= 0 ;
-    mes[INDEX_VALUE+1]= 0 ;
+    mes[INDEX_VALUE1]= 0 ;
   switch (message [COMMAND])  {
   case RESET_BYTE:
     mes[INDEX_STATUS] = resetByte (message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F("Reset Byte")));
 #endif
     break;
 
   case SET_BYTE:
     mes[INDEX_STATUS] = setByte (message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F("Set Byte")));
 #endif
     break;
   case RESET_BIT:
     mes[INDEX_STATUS] = resetBit(message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F("Reset Bit")));
 #endif
     break;
 
   case SET_BIT:
     mes[INDEX_STATUS] = setBit(message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F ("Set Bit")));
 #endif
     break;
   case READ_BIT:
    mes[INDEX_STATUS] = message[VALUE];
     mes[INDEX_STATUS+1] = readBit(message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F ("Read Bit")));
 #endif
     break ;
   case READ_BYTE:
     mes[INDEX_STATUS] = readByte();
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F ("Read Byte")));
 #endif
     break;
   case ANALOG_READ:
     mes[INDEX_STATUS] = readAByte(message[VALUE]);
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println((F("Read analog")));
 #endif
     break ;
@@ -357,7 +357,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
   case SET_CHRONO:
     if ( setChrono (&message[VALUE]))
     {
-#ifdef DEBUG
+#ifdef ADEBUG
       Serial.println(F ("Error eeprom "));
 #endif
       mes[INDEX_STATUS] =  -1;
@@ -379,7 +379,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
 
 
    case SET_ID:
-   #ifdef DEBUG
+   #ifdef ADEBUG
     Serial.println((F("Set ID")));
    #endif
     EEPROM.write(MY_NODE, message[VALUE]);
@@ -389,7 +389,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
   /* GET AN SET TEMP Could be On  Other Part */
 
     case SET_TEMP_OFFSET:
-   #ifdef DEBUG
+   #ifdef ADEBUG
     Serial.println((F("Set offset temp")));
     Serial.print(message[VALUE],DEC);
     Serial.print(message[VALUE1],DEC);
@@ -407,7 +407,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
     break;
 
     case GET_TEMP:
-   #ifdef DEBUG
+   #ifdef ADEBUG
     Serial.println((F("Get TEMP")));
    #endif
     mes[INDEX_STATUS]= (char) (temptxIn.temp / 10 ); // Convert in celsius
@@ -420,7 +420,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
 
    default:
      mes[INDEX_STATUS] =  -1;          // Should be error
-    #ifdef DEBUG
+    #ifdef ADEBUG
       Serial.println(F ("Er Order"));
       for(int  i = 0 ; i < 4; i++ )
             Serial.print (*message++,HEX);
@@ -429,6 +429,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message )
 
 
   }
+
   mes[INDEX_ANSWER] = ANSWER ;
   mes[INDEX_VALUE+2]= minutes / 60 ;
   mes[INDEX_VALUE+3] = minutes % 60 ;
@@ -439,7 +440,7 @@ delay(TimeBeforeSend);
       rf12_sendNow (SEND_TO_ALL, mes, 7);
       rf12_sendWait(0); // No powerdown
 
-#ifdef DEBUG2
+#ifdef ADEBUG2
       //  Serial.println(mes[INDEX_STATUS],HEX);
         Serial.print(F (" S "));
       for(int  i = 0 ; i < 7; i++ )
@@ -447,8 +448,52 @@ delay(TimeBeforeSend);
             Serial.print (mes[i],HEX);
             Serial.print (F(" "));
       }
+      Serial.println(F(""));
 #endif
 
+
+}
+
+void Automate::send(volatile unsigned char state,volatile unsigned char data)
+{
+  unsigned char mes[7] ;
+
+    mes[INDEX_ANSWER] = ANSWER ;
+    mes[INDEX_ORDER]=READ_BIT;
+   mes[INDEX_STATUS] = data;
+   switch (state)
+    {
+     case 2 :
+       mes[INDEX_ORDER]=GET_TEMP;
+       break ;
+     case 1 :
+        mes[INDEX_VALUE] = 1;
+    break;
+    case 0 :
+         mes[INDEX_VALUE] = 0;
+    break ;     
+    }
+    mes[INDEX_VALUE1] = 0;
+    mes[INDEX_VALUE2]= minutes / 60 ;
+    mes[INDEX_VALUE3] = minutes % 60 ;
+
+
+  delay(TimeBeforeSend);
+
+        rf12_sendNow (SEND_TO_ALL, mes, 7);
+        rf12_sendWait(0); // No powerdown
+
+
+    #ifdef ADEBUG2
+          //  Serial.println(mes[INDEX_STATUS],HEX);
+            Serial.print(F (" Si "));
+          for(int  i = 0 ; i < 7; i++ )
+          {
+                Serial.print (mes[i],HEX);
+                Serial.print (F(" "));
+          }
+                Serial.println(F(""));
+    #endif
 
 }
 
@@ -460,7 +505,7 @@ char  Automate::setChrono (volatile unsigned char  *message)
   indexChrono = message[INDEX] * SIZE_RECORD_CHRONO ;
   if (indexChrono >= (SIZE_CHRONO+SEQUENCE_SIZE))
     return  (-1);
-#ifdef DEBUG1
+#ifdef ADEBUG1
   Serial.print(F ( "Write Chrono " ));
   Serial.println( indexChrono,HEX );
 #endif
@@ -468,7 +513,7 @@ char  Automate::setChrono (volatile unsigned char  *message)
   {
 
     EEPROM.write(i+indexChrono, message[i+1]);
-#ifdef DEBUG1
+#ifdef ADEBUG1
     Serial.println(message[i+1],HEX );
 #endif
   }
@@ -514,7 +559,7 @@ void  Automate::setup ()
     EEPROM.write(SIZE_EEPROM-1,SIGNATURE);
 
 
-#ifdef DEBUG
+#ifdef ADEBUG
     Serial.println(F ("Initialisation EEPROM"));
     Serial.print ( F("Valeur Offset"));
     Serial.println(tempOffset,DEC);
@@ -524,7 +569,7 @@ void  Automate::setup ()
   {
    if ( t_out [i] != t_in [i])
            pinMode(t_in[i],INPUT);
-#ifdef DEBUG1
+#ifdef ADEBUG1
     Serial.println(t_in[i],HEX);
 #endif
     i++;
@@ -533,7 +578,7 @@ i = 0;
   while (  i< SIZE_IO && t_out[i] >= 0 )
   {
     pinMode(t_out[i], OUTPUT);
-#ifdef DEBUG1
+#ifdef ADEBUG1
     Serial.println(t_out[i],HEX);
 #endif
     i++;

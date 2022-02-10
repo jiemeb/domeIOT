@@ -12,9 +12,10 @@ int getFileLine::setFile (String  pathFile,unsigned short min )
   currentPointer = 0 ;
   file = (File) 0;
   minimunChar = min;
-  file = SPIFFS.open(pathFile, "r");
+  file = LittleFS.open(pathFile, "r");
   if ( file != 0)
     return (0);
+return -1; 
 }
 
 

@@ -86,7 +86,7 @@ char Automate::resetBit( volatile  unsigned char  value )
 {
 if (value & 0x80)
 {
-markers &= ~(1<<(value & 0x7F));
+markers &= ~(1<<(value & 0xF)); // Only 16 Bit
 }
 else
 {
@@ -101,7 +101,7 @@ char Automate::setBit( volatile  unsigned char  value )
 {
 if (value & 0x80)
 {
-markers |= (1<<(value & 0x7F));
+markers |= (1<<(value & 0xF));        // Only 16 Bit
 }
 else
 {
@@ -115,7 +115,7 @@ char Automate::readBit( volatile unsigned char  value )
 {
 if (value & 0x80)
 {
-if (markers & (1<<(value & 0x7F)))
+if (markers & (1<<(value & 0xF)))
 	value = 1 ;
 else
 	value = 0 ;
@@ -151,8 +151,7 @@ char Automate::setTime(volatile unsigned short  value,char valSecondes ) // Jour
   Serial.println(value,HEX);
 #endif
   jour = (value >> 12 );
-
-
+/*
   if ( calibrationTime  && !holdMinutes) // Init TCalibration
     {
   	holdMinutes = value ;
@@ -183,8 +182,7 @@ char Automate::setTime(volatile unsigned short  value,char valSecondes ) // Jour
 //	secondeTimer.poll(countSecondes) ;	//start new now
        }
     }
-
-
+*/
   minutes = (value & 0xFFF ) ;
   secondes = valSecondes ;
 
@@ -211,8 +209,8 @@ char Automate::readAByte( volatile unsigned char  value )
 /*--------------------------------------------------------Automate Manipulation ---------------------------------------*/
 void Automate::live()
 {
-/*  if (secondeTimer.poll(countSecondes))
-  {
+ // if (secondeTimer.poll(countSecondes))
+ // {
     secondes += 1   ;
     if ( secondes > 59 )
     {
@@ -257,9 +255,9 @@ void Automate::live()
           }
         }
       }
-    }
+  //  }
    // ----------------Calibration time ---------------------------//
-    if (calibrationTime ) //Let's go
+  /*  if (calibrationTime ) //Let's go
     {
       if ((calibrationTime == CALIBRATION_TIME) || (calibrationTime == 2)) //Get 1498 Secondes
       {
@@ -278,11 +276,11 @@ delay(200+(EEPROM.read(MY_NODE)*5));
       }
       calibrationTime -= 1;    //decrement Calibration
 
-    }
+    } */
 
 
   }
-*/
+
 
 }
 
@@ -406,7 +404,7 @@ void  Automate::decodeMessage(volatile unsigned char   *message ,unsigned int le
     EEPROM.write(MY_OFFSET, offset >>8);
     EEPROM.write(MY_OFFSET+1, offset & 0xFF);
     mes[INDEX_STATUS] = 0;
-     EEPROM.commit();
+    EEPROM.commit();
     break;
 
     case GET_TEMP:
@@ -453,6 +451,49 @@ sendResult(mes,7);
       }
 #endif
 
+
+}
+
+void Automate::send(volatile unsigned char state,volatile unsigned char data)
+{
+  unsigned char mes[7] ;
+
+    mes[INDEX_ANSWER] = ANSWER ;
+    mes[INDEX_ORDER]=READ_BIT;
+   mes[INDEX_STATUS] = data;
+   switch (state)
+    {
+     case 2 :
+       mes[INDEX_ORDER]=GET_TEMP;
+       break ;
+     case 1 :
+        mes[INDEX_VALUE] = 1;
+    break;
+    case 0 :
+         mes[INDEX_VALUE] = 0;
+    break ;     
+    }
+    mes[INDEX_VALUE1] = 0;
+    mes[INDEX_VALUE2]= minutes / 60 ;
+    mes[INDEX_VALUE3] = minutes % 60 ;
+
+sendResult(mes,7);
+  //delay(TimeBeforeSend);
+
+//        rf12_sendNow (SEND_TO_ALL, mes, 7);
+//        rf12_sendWait(0); // No powerdown
+
+
+    #ifdef ADEBUG2
+          //  Serial.println(mes[INDEX_STATUS],HEX);
+            Serial.print(F (" Si "));
+          for(int  i = 0 ; i < 7; i++ )
+          {
+                Serial.print (mes[i],HEX);
+                Serial.print (F(" "));
+          }
+                Serial.println(F(""));
+    #endif
 
 }
 
@@ -503,11 +544,12 @@ void  Automate::setup ()
   countSecondes = 1000;
   markers = 0 ;
   // Init EEPROM
+u_int8_t miseALHeure[7];
+miseALHeure[2]= SET_TIME ;
+ 
 
-
-
-    EEPROM.begin(SIZE_EEPROM);
-
+  EEPROM.begin(SIZE_EEPROM);
+transformOrder (miseALHeure,6,"");
   if ( SIGNATURE != EEPROM.read(SIZE_EEPROM-1))
   {
     short tempOffset = TEMPERATURE_OFFSET ;
@@ -518,7 +560,7 @@ void  Automate::setup ()
     #endif
 
     for (unsigned short  i = 0; i < SIZE_EEPROM; i++)
-                                       EEPROM.write(i, ZERO_EEPROM);
+            EEPROM.write(i, ZERO_EEPROM);
 
 // Offset of temperatur
 

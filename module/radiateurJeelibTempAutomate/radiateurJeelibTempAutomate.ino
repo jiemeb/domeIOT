@@ -6,7 +6,7 @@
 /// To be define
 
 //#include <SoftwareSerial.h>
-//SoftwareSerial Serial(10,9); // RX, TX
+//SoftwareSerial Serial(1,8); // RX, TX
 
 #include <JeeLib.h>
 #include "automate.h"
@@ -21,13 +21,13 @@ Automate A;
 internalTemperature T;
 sequenceur S;
 volatile temptx temptxIn;
-int lastSecconde;
+volatile int lastSecconde;
 
 
 void setup () {
 
-  Serial.begin(9600);
-  //Serial.println(F("9600"));
+  Serial.begin(115200);
+  //Serial.println(F("115200"));
     A.setup();
     T.setup();
     S.setup();

@@ -19,6 +19,7 @@ extern RemoteDebug Debug;
 WiFiClient client;
 HTTPClient http;
 char equ_bit[numberCardMax][8];
+char equ_marker[numberCardMax][16];
 char equ_temp[numberCardMax];
 
 void sendDomoticz(String url)
@@ -27,7 +28,7 @@ DEBUG_PRINT("connecting to ");
 DEBUG_PRINTLN(sendToHost);
 DEBUG_PRINT("Requesting URL: ");
 DEBUG_PRINTLN(url);
-http.begin(sendToHost,sendToPort,url);
+http.begin(client,sendToHost,sendToPort,url);
 int httpCode = http.GET();
 	if (httpCode) {
 		if (httpCode == 200) {
@@ -55,12 +56,16 @@ for (  j = 0; j < numberCardMax; j++)
 	{
 		equ_bit[j][i] = 0 ;
 	}
+ for ( i = 0; i< 8 ; i++ )
+	{
+		equ_marker[j][i+8] = 0 ;
+	}	
 		equ_temp[j] = 0 ;
 }
   printf("Init event_domoticz\n\r");
   File  file = LittleFS.open("/event_domoticz.ini", "r");
 
-    if (file != NULL)
+    if (file )
     {
 			i=0;
 			j=0 ;
@@ -94,8 +99,17 @@ for (  j = 0; j < numberCardMax; j++)
 			}
 			else
 			{
-				equ_bit[j-2][i] = k ;
-				printf("Sondes  %x %x %d \n\r", j,i,equ_bit[j-2][i]);
+				if(i & 0x80 )
+				{	
+					equ_marker[j-2][i & 0x7F] = k ;
+					printf("Marker  %x %x %d \n\r", j,i,equ_marker[j-2][i & 0x7F]);
+				}
+				else
+				{
+					equ_bit[j-2][i] = k ;
+					printf("IO  %x %x %d \n\r", j,i,equ_bit[j-2][i]);
+				}
+			
 			}
 
 
@@ -122,14 +136,13 @@ void event_domoticz_event_temp(char card,char value)
 
 }
 
-void event_domoticz_event_bit(char card,char bit,char value)
+void event_domoticz_event_bit(char card,unsigned char bit,char value)
 {
 
 //	const char event_bit[] ="http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=%d&switchcmd=%s" ;
 	const char event_bit[] =SWITCH ;
 	const char event_bit_etat[2][4]= { "Off","On" } ;
 	char mes_post[255] ;
-	printf(event_bit,equ_bit[-2+card][bit],event_bit_etat[value & 1]) ;
 
 	sprintf(mes_post,event_bit,equ_bit[-2+card][bit],event_bit_etat[value & 1]) ;
 	sendDomoticz( mes_post); //send notification

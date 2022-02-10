@@ -43,16 +43,16 @@ int   i;
 //   fd_set fds;
    time_t tt;
    struct  tm *s_time;
-  getFileLine gline ; // Min read 6
+   getFileLine gline ; // Min read 6
 
 
-  //event_domoticz_init();	// prepare event for domoticz
+ 
 
 
 
   //----------------------- lecture Fifo ------------------------------------//
 	//		0		1		2	3	4	5
-	// Ibuf = lenth of tansmit,Destination-Byte,LOrder , Value , Value 2,Value 3
+	// Ibuf = lenth of transmit,Destination-Byte,LOrder , Value , Value 2,Value 3
   //	uint8_t  ibuf[RF12_MAX_SLEN+1], obuf[RF12_MAX_RLEN+1];
 	//int status;
   //  	 len = read(fd_rfm12_in, ibuf, 4);
@@ -64,25 +64,28 @@ int   i;
 		case '0' :
 		    break ;
 		case SET_TIME :
-  		//	time (&tt);
+  			time (&tt);
     //    timeClient.update();
-    /*    tt= timeClient.getUnixTime();
+        tt= timeClient.getUnixTime();
 			  s_time = localtime(&tt);
-    	   ibuf[1] = jee_id_all;
+
+   // 	   ibuf[1] = jee_id_all;
 			   ibuf[2] = SET_TIME;
-  			 ibuf[3] = (s_time->tm_wday<< 4 )|( ((s_time->tm_hour * 60)+ s_time->tm_min)>> 8)  ;
+  			   ibuf[3] = (s_time->tm_wday<< 4 )|( ((s_time->tm_hour * 60)+ s_time->tm_min)>> 8)  ;
 			   ibuf[4] = ((s_time->tm_hour * 60)+ s_time->tm_min) & 0xFF;
 			   ibuf[5] = s_time->tm_sec ;
-			for (i=0; i<6; i++)
+
+		for (i=0; i<6; i++)
         {
 
           sprintf(tempo," [%d] %X ",i, ibuf[i]);
           DEBUG_PRINT(tempo);
 			  }
       DEBUG_PRINT(" \n");
-            delay(TIME_BEFORE_SEND);*/
-
+  /*          delay(TIME_BEFORE_SEND);*/
+	 A.decodeMessage(ibuf, len, file);
 		break ;
+		
 		case GET_TEMP :
 		case RESET_EEPROM:
 		case READ_BYTE:
@@ -105,7 +108,7 @@ int   i;
 				// Here I would like to test if anti loopback is on
 				// Try to find order in Buf with time min 4 second
 
-			//time ( &tt );
+	   time ( &tt );
 //      timeClient.update();
       tt= timeClient.getUnixTime();
 			tt -= ANTI_BOUCLE_TIME ; // Could event went 4 second before
@@ -124,13 +127,13 @@ int   i;
 
 //				printf("Buffeur bit %d etat %d \n ",buffeur_antiboucle[k].bit,buffeur_antiboucle[k].etat);
 
-				            if (((buffeur_antiboucle[k].etat == 1) && (  ibuf[2] == SET_BIT )) || ((buffeur_antiboucle[k].etat == 0) && ( ibuf[2] == RESET_BIT )))
-						              { // Bingo do nothing
-						                      sprintf(tempo,"antiboucle %x \n\r",ibuf[1]);
+				  if (((buffeur_antiboucle[k].etat == 1) && (  ibuf[2] == SET_BIT )) || ((buffeur_antiboucle[k].etat == 0) && ( ibuf[2] == RESET_BIT )))
+				              { // Bingo do nothing
+				                  sprintf(tempo,"antiboucle %x \n\r",ibuf[1]);
                                   DEBUG_PRINT(tempo);
-						                      noBoucle = 0;
-						                      break ;
-						               }
+				                  noBoucle = 0;
+				                  break ;
+				               }
 
                 }
               }
@@ -145,7 +148,7 @@ int   i;
     if (len >= 5 )
         len = 5 ;
 		//read(fd_rfm12_in, &ibuf[4], 1);
-    sprintf(tempo,"pret a emettre %d --->",len);
+    sprintf(tempo,"RecOrder %d --->",len);
     DEBUG_PRINT(tempo);
       for (i=0; i<len; i++)
     {
@@ -273,7 +276,13 @@ int   i;
     while ((gline.getLine (tempo)))
      		{
 	    		if( 2 != sscanf(tempo, "%x %x\n", &op1,&data1))
-				break;
+					break;
+				if (!(gline.getLine(tempo)))
+					{
+						op2=data2=0x7F ;
+					break;
+					}
+
       		if( 2 != sscanf(tempo, "%x %x\n",&op2,&data2))
 				break;
       		sprintf(tempo,"index %d op1 %X data1 %X op2 %X data2 %X \n",index1,op1,data1,op2,data2);
@@ -326,9 +335,6 @@ int   i;
 
 	}
 
-
-
-
 // thread for reading from fm
 
 void sendResult(uint8_t *obuf,volatile int len)
@@ -348,7 +354,7 @@ void sendResult(uint8_t *obuf,volatile int len)
         tt= timeClient.getUnixTime();
 	         	sprintf(tempo,"%s", ctime(&tt));
             DEBUG_PRINT(tempo);
-	         	sprintf(tempo,"\n %d bytes read Hexa ", len);
+	         	sprintf(tempo,"\n %d bytes sendResult ", len);
            DEBUG_PRINT(tempo);
 	         	for (i=0; i<len; i++) {
 	            		DEBUG_PRINT2(obuf[i],HEX);

@@ -10,8 +10,8 @@
 #include "internalTemperature.h"
 
 
-//#define DEBUG
-//#define DEBUG1
+//#define IDEBUG
+//#define IDEBUG1
 
 //--------------------------------------------------------------------------------------------------
 // Read current supply voltage
@@ -32,7 +32,7 @@
 
 
 void internalTemperature::sprint() {
- #ifdef DEBUG1
+ #ifdef IDEBUG1
   Serial.print( F("> R:") );
   Serial.print( raw (), DEC );
   Serial.print(F( " C:" ));
@@ -91,7 +91,7 @@ void internalTemperature::live()
   in_c() ; // Convert temperature to an integer, reversed at receiving end
   temptxIn.supplyV = readVcc(); // Get supply voltage
 
-  #ifdef DEBUG
+  #ifdef IDEBUG
   Serial.print( readVcc(), DEC );
   Serial.println(F( " # ") );
   #endif
@@ -107,7 +107,7 @@ void  internalTemperature::setup ()
 {
 offset = EEPROM.read ( MY_OFFSET )<< 8;
 offset |= EEPROM.read ( MY_OFFSET+1 );
-  #ifdef DEBUG
+  #ifdef IDEBUG
     Serial.println((F("Offset Value #")));
     Serial.println(EEPROM.read(MY_OFFSET),DEC);
     Serial.println(EEPROM.read(MY_OFFSET+1),DEC);

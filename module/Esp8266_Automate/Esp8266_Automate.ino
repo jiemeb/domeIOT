@@ -2,17 +2,17 @@
   ESP8266 mDNS serial wifi bridge by Daniel Parnell 2nd of May 2015
 */
 
-//#define BONJOUR_SUPPORT
+#define BONJOUR_SUPPORT
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #ifdef BONJOUR_SUPPORT
 #include <ESP8266mDNS.h>
 #endif
-
+#include <time.h>
 #include <ESP8266WebServer.h>
 #include <EasyNTPClient.h>
 #include <WiFiUdp.h>
-
+#include "sequence.h"
 extern void order();
 extern void getLog();
 //#include "esp8266_pwm.h"
@@ -52,15 +52,15 @@ RemoteDebug Debug;
 // change the WiFi info to match your network
 #define WIFI_SSID "ici_maison"
 #define WIFI_PASSWORD "E18E38980D"
-#define WIFI_SSID1 "ici_maison_EXT"
+#define WIFI_SSID1 "ici_maison"
 #define WIFI_PASSWORD1 "E18E38980D"
-#define BAUD_RATE 57600
+#define BAUD_RATE 115200
 #define TCP_LISTEN_PORT 80
 #define USE_WDT
 
 // if the bonjour support is turned on, then use the following as the name
 // define for OTA et DEBUG
-#define DEVICE_NAME "Esp_Automate1"
+#define DEVICE_NAME "Esp_Automate"
 
 // serial end ethernet buffer size
 #define BUFFER_SIZE 128
@@ -80,9 +80,12 @@ uint8_t cardID;
 String Log[LogSize];
 int fifo_in ;
 int fifo_out;
+time_t tt;
+char  holdTimerSecond ;
 Automate A;
+sequenceur S;
 ESP8266WebServer server(TCP_LISTEN_PORT);
-
+ struct  tm *s_time;
 
 #ifdef STATIC_IP
 IPAddress parse_ip_address(const char *str) {
@@ -154,7 +157,7 @@ void connect_to_wifi() {
 }
 
 void error() {
-  int count = 0;
+
 #ifdef DEBUG
   DEBUG_PRINTLN("connection Erreur");
 #endif
@@ -207,7 +210,13 @@ void setup(void)
     Debug.begin(DEVICE_NAME);
     setupFSBrowser();
     event_domoticz_init();
+
+    tt= timeClient.getUnixTime();
+		s_time = localtime(&tt);
+    holdTimerSecond =s_time->tm_sec;     // time from starting in millisecond
    A.setup();
+   S.setup();
+
 }
 
 
@@ -216,14 +225,26 @@ void setup(void)
 
 void loop(void)
 {
-  int bytes_read;
-  uint8_t net_buf[BUFFER_SIZE+1];
-  uint8_t serial_buf[BUFFER_SIZE+1];
+
+ // uint8_t serial_buf[BUFFER_SIZE+1];
   #ifdef USE_WDT
     wdt_reset();
   #endif
   ArduinoOTA.handle(); // test to get update
-  Debug.handle();
+  Debug.handle();  
+
+         tt= timeClient.getUnixTime();
+
+			s_time = localtime(&tt);
+
+   unsigned char newSecond = s_time->tm_sec; 
+  if (newSecond != holdTimerSecond ) // go to every second
+    {
+    A.live() ;
+    S.live() ;
+    holdTimerSecond = newSecond;
+    }
+
 
   if (WiFi.status() != WL_CONNECTED) {
     // we've lost the connection, so we need to reconnect
@@ -248,7 +269,7 @@ void loop(void)
 
 void order() {
   uint8_t *p_message ;
-  uint8_t length_message ;
+  uint8_t length_message = 0;
   String messageR = "";
 
   messageR = server.arg("order");
@@ -259,7 +280,7 @@ void order() {
 
   } else {
     uint8_t k ;
-    uint8_t length_message = messageR.length() / 2;
+ 
     p_message = new  uint8_t [10];
     k = 0;    //Parameter found
     for (uint8_t  i = 0 ; i < messageR.length(); i++ )
@@ -279,14 +300,16 @@ void order() {
       {
         k = j * 16 ;
       }
-
+    length_message = i/2 +1;
     }
+    
+
     String file = "";
 
     file = server.arg("file");
-
+    
     DEBUG_PRINT( messageR );
-//    A.decodeMessage(p_message, length_message, file);
+
     transformOrder(p_message, length_message, file);
    Log[fifo_in++] = messageR+"\n";
 
