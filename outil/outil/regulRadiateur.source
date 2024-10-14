@@ -1,25 +1,28 @@
 
+
+#define :BitNuit	01
+#define :BitNChauffe	02
 :Debut	BM	00
-	IN	01
-	RB	02
-	IL	00
-	LM	00
-	LA	80
-	CC	12
-	FS	00
-	SB	02
-	LA	80
-	CC	12
-	FI	00
-	RB	02
-	EM	02
-	BM	01
-	LA	80
-	CC	20
-	FS	00
-	SB	02
-	EM	01
-	BM	02
+	IN	:BitNuit		       // In Bit 1 
+	RB	:BitNChauffe		        // si LCR reset Bit 2   
+	IL	00         // Complement LCR
+	LM	00         // Quit Module 00
+	LA	80         // set registre ACC Temperatur
+	CC	12         // Compare to 12 (18) 
+	FS	00        // Force LCR to 1 if ACR  1 
+	SB	:BitNChauffe        // SB 2 si LCR 1 / stop chauffe
+	LA	80        // Set registre ACC Temperatur
+	CC	12        // Compare to 18 C
+	FI	00        // Force LCR to 1 if ACR 2
+	RB	:BitNChauffe        // RB 02
+	EM	00          // Fin de Module 
+	BM	01          
+	LA	80        // Set register ACC temperature
+	CC	20        // Compare to 32
+	FS	00        // Force LCR si ACR 1
+	SB	:BitNChauffe        // Set Bit 02 
+	EM	01  
+	BM	02  
 	EM	02
 	BM	03
 	EM	03

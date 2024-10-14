@@ -1,18 +1,18 @@
 #example de commande a envoyer au gateway sans interface graphique
 
-curl http://192.168.0.10/get --output toto
+curl http://192.168.1.21/get --output toto
 
-wget -O toto -T 4  http://192.168.0.10/list?dir=/
+wget -O toto -T 4  http://192.168.1.21/list?dir=/
 
-curl   http://192.168.0.10/list?dir=/
+curl   http://192.168.1.21/list?dir=/
  
-for file in `ls -A1`; do curl -F "file=@$PWD/$file" 192.168.0.10/file; done
+for file in `ls -A1`; do curl -F "file=@$PWD/$file" 192.168.1.21/file; done
 
-curl -F "file=@event_domoticz.ini" 192.168.0.10/file
+curl -F "file=@event_domoticz.ini" 192.168.1.21/file
   
-curl  http://192.168.0.10/fileRead?file=/event_domoticz.ini
-curl 192.168.0.10/fileDelete?file=/event_domoticz.ini
+curl  http://192.168.1.21/fileRead?file=/event_domoticz.ini
+curl 192.168.1.21/fileDelete?file=/event_domoticz.ini
 
 
-wget -O toto -T 4  http://192.168.0.10/order?order=031E01FF
-wget -O toto -T 4 "http://192.168.0.10/order?file=/bibliotheque&order=031E0A00"
+wget -O toto -T 4  http://192.168.1.21/order?order=031E01FF
+wget -O toto -T 4 "http://192.168.1.21/order?file=/bibliotheque&order=031E0A00"

@@ -1,0 +1,61 @@
+
+
+#define	:BitDescente	00
+#define	:BitMonte	01
+#define	:DemandDescente	88
+#define	:DemandeMonte	89
+#define	:flagDescente	80
+#define	:flagMonte	81
+
+:Debut	BM	00
+	CI	:DemandDescente
+	CA	:DemandeMonte
+	RB	:BitMonte
+	RB	:BitDescente
+
+	IN	:DemandeMonte        // In Bit 81 
+	RB	:BitDescente         // si LCR reset Bit 0  
+	SB	:BitMonte
+	TC	2D
+	RB	:BitMonte
+	RB	:DemandeMonte
+	
+	IN	:DemandDescente        // In Bit 89 
+	RB	:BitMonte         // si LCR reset Bit 1  
+	SB	:BitDescente
+	TC	2D
+	RB	:BitDescente
+	RB	:DemandDescente
+	
+	EM	00          // Fin de Module 
+
+	BM	01          
+	IN	:BitDescente	  // IN Bit 0x1
+	XO	:flagDescente	//Xor Marqueur bit 8 in hexa are HexaValue
+	BF	:fin		//Branchement si Faux
+                    // Autre commentaire
+	IN	:BitDescente  
+	OT	:flagDescente	// Copy LCR in Marqueur 2
+	I1	:BitDescente	// If LCR Iform Bit 1 a 1
+	IL	00	// Complement LCR
+	I0	:BitDescente	// If LCR a 1 Bit 1 a 0
+
+:fin	IN	:BitMonte	  // IN Bit 0x1
+	XO	:flagMonte	//Xor Marqueur bit 8 in hexa are HexaValue
+	BF	:fin1		//Branchement si Faux
+                    // Autre commentaire
+	IN	:BitMonte  
+	OT	:flagMonte	// Copy LCR in Marqueur 2
+	I1	:BitMonte	// If LCR Iform Bit 1 a 1
+	IL	00	// Complement LCR
+	I0	:BitMonte	// If LCR a 1 Bit 1 a 0
+	
+:fin1	EM	01
+	BM	02	//Begin Module 2
+				TC	3C	// Attente 1 minutes
+				IC	00	// Send Temperature
+	EM	02	// Fin Module 2
+
+	BM	03
+	EM	03
+	EM	03

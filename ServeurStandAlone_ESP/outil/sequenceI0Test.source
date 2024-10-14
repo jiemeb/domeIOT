@@ -1,0 +1,8 @@
+
+:Debut	BM	00
+	IN	02
+	I1	01
+	IL	00
+	I0	01
+:fin	EM	00
+

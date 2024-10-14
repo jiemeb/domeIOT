@@ -1,4 +1,4 @@
-BEGIN {print"assemblage";FS="\t"
+BEGIN {print"SYNTAX: awk -v FILE=finalFile -f asm.awk fileSource";print "\n\r";FS="\t|\040"
 
 op_code["EM"]="7F" 			#/* Fin de module		*/
 op_code["BM"]="00"			#/* Debut de module		*/
@@ -61,6 +61,9 @@ op_code["PL"]="51"	#/* Impression Date et Heure		*/
 op_code["EP"]="52"	#/* acquisition decimal dans reg		*/
 op_code["PR"]="53"	#/* Impression Message Indexe sur reg    */
 
+op_code["I1"]="55"   #/* inform to all Bit 1              */
+op_code["I0"]="56"   #/* inform to all Bit 0              */
+op_code["IC"]="57"   #/* inform Celsius Temperature              */
 #/* definition des codes synchro taches		*/
 
 op_code["RE"]="60"	#/* redemarrage tache			*/
@@ -74,7 +77,8 @@ op_code["FS"]="69"	#/* LCR = 1 if ACR = 1		        */
 op_code["FI"]="6A"	#/* LCR = 1 if ACR = 2                   */
 NL=0
 PASS=0
-system(" > \"sequence\"")
+#system(" > \"sequence\"")
+system(" > "FILE)  #empty file
 }
 
 { 
@@ -83,14 +87,21 @@ while (PASS==0)  # traitement des LABELs
 if((getline<FILENAME) > 0)
 {
 if ($1 != "")
-	{#print" LABEL "  $1 " " NL
-	LABEL[$1] = NL
+	{
+	if ($1 == "#define") 
+		{  LABEL[$2] = $3 
+		print" LABEL "  $2 " " LABEL[$2]}
+	else
+
+		{LABEL[$1] = NL
+		print" LABEL "  $1 " " LABEL[$1]	}
  }
- if ($2!="")  
+ if ($2!="" )  
   {
 	if ($2 == "EM") 
 	{ NL=0 }
 	else
+	if ($1 != "#define")
 	{ NL++ }
   }  
 
@@ -107,15 +118,22 @@ getline $0
 }
 
 
-  if ($2!="")  
+  if ($2 != "" && $1 != "#define" )  
   { OP = op_code[$2] 
 	if ($3 ~ ":") 
-	{ DATA = LABEL[$3] }
+	{ DATA = LABEL[$3] } # must implement relative value
 	else 
 	{ DATA =  $3 }
+	
 if (OP == "" || DATA == "")
-	print ("Erreur ligne " FNR)
-  print ( OP " " DATA ) >> "sequence"
+	{
+	print ("Erreur ligne " FNR " (OP/DATA) " OP DATA)
+	}
+else	
+  {
+  print ( OP " " DATA )	
+  print ( OP " " DATA ) >> FILE
+	}	
 	}  
 }
 

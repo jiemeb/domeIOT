@@ -1,0 +1,58 @@
+
+
+#define	:BitDescente	01
+#define	:BitMonte	00
+#define	:DemandDescente	89
+#define	:DemandeMonte	88
+#define	:flagDescente	81
+#define	:flagMonte	80
+
+:Debut	BM	00
+	CI	:DemandDescente		// entre complémeter dans LCR
+	CA	:DemandeMonte		// AND complement dans LCR 
+	RB	:BitMonte		// si je n'ai ni Demande de descent ni demande de Monté alors Reset Bit Bit monté
+	RB	:BitDescente
+	IN	:DemandDescente        // In Bit 89
+	RB	:BitMonte         // si LCR reset Bit 1  
+	SB	:BitDescente      // si LCR
+	TC	2D		  // si LCR tempo 45s
+	RB	:BitDescente
+	RB	:DemandDescente
+ 
+	IN	:DemandeMonte        // In Bit 80 
+	RB	:BitDescente         // si LCR reset Bit 0  
+	SB	:BitMonte
+	TC	2D
+	RB	:BitMonte
+	RB	:DemandeMonte
+	EM	00          // Fin de Module 
+
+	BM	01          
+	IN	:BitDescente	  // IN Bit 0x1
+	XO	:flagDescente	//Xor Marqueur bit 8 in hexa are HexaValue
+	BF	5			//Branchement si Faux a fin BF 5 ne sait pas calculer la valeur relative
+
+	IN	:BitDescente  
+	OT	:flagDescente	// Copy LCR in Marqueur 2
+	I1	:BitDescente	// If LCR Iform Bit 1 a 1
+	IL	00	// Complement LCR
+	I0	:BitDescente	// If LCR a 1 Bit 1 a 0
+:fin
+	IN	:BitMonte	  // IN Bit 0x1
+	XO	:flagMonte	//Xor Marqueur bit 8 in hexa are HexaValue
+	BF	5		//Branchement si Faux
+                    // Autre commentaire
+	IN	:BitMonte  
+	OT	:flagMonte	// Copy LCR in Marqueur 2
+	I1	:BitMonte	// If LCR Iform Bit 1 a 1
+	IL	00	// Complement LCR
+	I0	:BitMonte	// If LCR a 1 Bit 1 a 0
+:fin1
+	EM	01
+	BM	02	//Begin Module 2
+	TC	3C	// Attente 1 minutes
+	IC	00	// Send Temperature
+	EM	02	// Fin Module 2
+
+	BM	03
+	EM	03

@@ -32,11 +32,9 @@ extern WebServer server;
 #include <RemoteDebug.h>
 extern RemoteDebug Debug;
 
-
 #define FILESYSTEM SPIFFS
 // You only need to format the filesystem once
 #define FORMAT_FILESYSTEM false
-
 
 #if FILESYSTEM == FFat
 #include <FFat.h>
@@ -45,74 +43,112 @@ extern RemoteDebug Debug;
 #include <SPIFFS.h>
 #endif
 
-
-
 //holds the current upload
 File fsUploadFile;
 
 //format bytes
-String formatBytes(size_t bytes) {
-  if (bytes < 1024) {
+String formatBytes(size_t bytes)
+{
+  if (bytes < 1024)
+  {
     return String(bytes) + "B";
-  } else if (bytes < (1024 * 1024)) {
+  }
+  else if (bytes < (1024 * 1024))
+  {
     return String(bytes / 1024.0) + "KB";
-  } else if (bytes < (1024 * 1024 * 1024)) {
+  }
+  else if (bytes < (1024 * 1024 * 1024))
+  {
     return String(bytes / 1024.0 / 1024.0) + "MB";
-  } else {
+  }
+  else
+  {
     return String(bytes / 1024.0 / 1024.0 / 1024.0) + "GB";
   }
 }
 
-String getContentType(String filename) {
-  if (server.hasArg("download")) {
+String getContentType(String filename)
+{
+  if (server.hasArg("download"))
+  {
     return "application/octet-stream";
-  } else if (filename.endsWith(".htm")) {
+  }
+  else if (filename.endsWith(".htm"))
+  {
     return "text/html";
-  } else if (filename.endsWith(".html")) {
+  }
+  else if (filename.endsWith(".html"))
+  {
     return "text/html";
-  } else if (filename.endsWith(".css")) {
+  }
+  else if (filename.endsWith(".css"))
+  {
     return "text/css";
-  } else if (filename.endsWith(".js")) {
+  }
+  else if (filename.endsWith(".js"))
+  {
     return "application/javascript";
-  } else if (filename.endsWith(".png")) {
+  }
+  else if (filename.endsWith(".png"))
+  {
     return "image/png";
-  } else if (filename.endsWith(".gif")) {
+  }
+  else if (filename.endsWith(".gif"))
+  {
     return "image/gif";
-  } else if (filename.endsWith(".jpg")) {
+  }
+  else if (filename.endsWith(".jpg"))
+  {
     return "image/jpeg";
-  } else if (filename.endsWith(".ico")) {
+  }
+  else if (filename.endsWith(".ico"))
+  {
     return "image/x-icon";
-  } else if (filename.endsWith(".xml")) {
+  }
+  else if (filename.endsWith(".xml"))
+  {
     return "text/xml";
-  } else if (filename.endsWith(".pdf")) {
+  }
+  else if (filename.endsWith(".pdf"))
+  {
     return "application/x-pdf";
-  } else if (filename.endsWith(".zip")) {
+  }
+  else if (filename.endsWith(".zip"))
+  {
     return "application/x-zip";
-  } else if (filename.endsWith(".gz")) {
+  }
+  else if (filename.endsWith(".gz"))
+  {
     return "application/x-gzip";
   }
   return "text/plain";
 }
 
-bool exists(String path){
+bool exists(String path)
+{
   bool yes = false;
   File file = FILESYSTEM.open(path, "r");
-  if(!file.isDirectory()){
+  if (!file.isDirectory())
+  {
     yes = true;
   }
   file.close();
   return yes;
 }
 
-bool handleFileRead(String path) {
+bool handleFileRead(String path)
+{
   DEBUG_PORT.println("handleFileRead: " + path);
-  if (path.endsWith("/")) {
+  if (path.endsWith("/"))
+  {
     path += "index.htm";
   }
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
-  if (exists(pathWithGz) || exists(path)) {
-    if (exists(pathWithGz)) {
+  if (exists(pathWithGz) || exists(path))
+  {
+    if (exists(pathWithGz))
+    {
       path += ".gz";
     }
     File file = FILESYSTEM.open(path, "r");
@@ -123,42 +159,58 @@ bool handleFileRead(String path) {
   return false;
 }
 
-void handleFileUpload() {
-  if (server.uri() != "/file") {
+void handleFileUpload()
+{
+  if (server.uri() != "/file")
+  {
     return;
   }
-  HTTPUpload& upload = server.upload();
-  if (upload.status == UPLOAD_FILE_START) {
+  HTTPUpload &upload = server.upload();
+  if (upload.status == UPLOAD_FILE_START)
+  {
     String filename = upload.filename;
-    if (!filename.startsWith("/")) {
+    if (!filename.startsWith("/"))
+    {
       filename = "/" + filename;
     }
-    DEBUG_PORT.print("handleFileUpload Name: "); DEBUG_PORT.println(filename);
+    DEBUG_PORT.print("handleFileUpload Name: ");
+    DEBUG_PORT.println(filename);
     fsUploadFile = FILESYSTEM.open(filename, "w");
     filename = String();
-  } else if (upload.status == UPLOAD_FILE_WRITE) {
+  }
+  else if (upload.status == UPLOAD_FILE_WRITE)
+  {
     //DEBUG_PORT.print("handleFileUpload Data: "); DEBUG_PORT.println(upload.currentSize);
-    if (fsUploadFile) {
+    if (fsUploadFile)
+    {
       fsUploadFile.write(upload.buf, upload.currentSize);
     }
-  } else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile) {
+  }
+  else if (upload.status == UPLOAD_FILE_END)
+  {
+    if (fsUploadFile)
+    {
       fsUploadFile.close();
     }
-    DEBUG_PORT.print("handleFileUpload Size: "); DEBUG_PORT.println(upload.totalSize);
+    DEBUG_PORT.print("handleFileUpload Size: ");
+    DEBUG_PORT.println(upload.totalSize);
   }
 }
 
-void handleFileDelete() {
-  if (server.args() == 0) {
+void handleFileDelete()
+{
+  if (server.args() == 0)
+  {
     return server.send(500, "text/plain", "BAD ARGS");
   }
   String path = server.arg(0);
   DEBUG_PORT.println("handleFileDelete: " + path);
-  if (path == "/") {
+  if (path == "/")
+  {
     return server.send(500, "text/plain", "BAD PATH");
   }
-  if (!exists(path)) {
+  if (!exists(path))
+  {
     return server.send(404, "text/plain", "FileNotFound");
   }
   FILESYSTEM.remove(path);
@@ -166,30 +218,39 @@ void handleFileDelete() {
   path = String();
 }
 
-void handleFileCreate() {
-  if (server.args() == 0) {
+void handleFileCreate()
+{
+  if (server.args() == 0)
+  {
     return server.send(500, "text/plain", "BAD ARGS");
   }
   String path = server.arg(0);
   DEBUG_PORT.println("handleFileCreate: " + path);
-  if (path == "/") {
+  if (path == "/")
+  {
     return server.send(500, "text/plain", "BAD PATH");
   }
-  if (exists(path)) {
+  if (exists(path))
+  {
     return server.send(500, "text/plain", "FILE EXISTS");
   }
   File file = FILESYSTEM.open(path, "w");
-  if (file) {
+  if (file)
+  {
     file.close();
-  } else {
+  }
+  else
+  {
     return server.send(500, "text/plain", "CREATE FAILED");
   }
   server.send(200, "text/plain", "");
   path = String();
 }
 
-void handleFileList() {
-  if (!server.hasArg("dir")) {
+void handleFileList()
+{
+  if (!server.hasArg("dir"))
+  {
     server.send(500, "text/plain", "BAD ARGS");
     return;
   }
@@ -197,57 +258,59 @@ void handleFileList() {
   String path = server.arg("dir");
   DEBUG_PORT.println("handleFileList: " + path);
 
-
   File root = FILESYSTEM.open(path);
   path = String();
 
   String output = "[";
-  if(root.isDirectory()){
-      File file = root.openNextFile();
-      while(file){
-          if (output != "[") {
-            output += ',';
-          }
-          output += "{\"type\":\"";
-          output += (file.isDirectory()) ? "dir" : "file";
-          output += "\",\"name\":\"";
-          output += String(file.name()).substring(1);
-          output += "\"}";
-          file = root.openNextFile();
+  if (root.isDirectory())
+  {
+    File file = root.openNextFile();
+    while (file)
+    {
+      if (output != "[")
+      {
+        output += ',';
       }
+      output += "{\"type\":\"";
+      output += (file.isDirectory()) ? "dir" : "file";
+      output += "\",\"name\":\"";
+      output += (file.name());
+      //output += String(file.name()).substring(1);
+      output += "\"}";
+      file = root.openNextFile();
+    }
   }
   output += "]";
   server.send(200, "text/json", output);
 }
 
-void setupFSBrowser(void) {
+void setupFSBrowser(void)
+{
   // DEBUG_PORT.print.begin(115200); Initialised on main setup
   DEBUG_PORT.print("\n");
-//  DEBUG_PORT.print.setDebugOutput(true);
-  if (FORMAT_FILESYSTEM) FILESYSTEM.format();
+  //  DEBUG_PORT.print.setDebugOutput(true);
+  if (FORMAT_FILESYSTEM)
+    FILESYSTEM.format();
   if (FILESYSTEM.begin())
   {
-      File root = FILESYSTEM.open("/");
-      File file = root.openNextFile();
-      while(file){
-          String fileName = file.name();
-          size_t fileSize = file.size();
+    File root = FILESYSTEM.open("/");
+    File file = root.openNextFile();
+    while (file)
+    {
+      String fileName = file.name();
+      size_t fileSize = file.size();
 
-          DEBUG_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
-          file = root.openNextFile();
-      }
+      DEBUG_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+      file = root.openNextFile();
+    }
 
-      DEBUG_PORT.print("\n");
+    DEBUG_PORT.print("\n");
   }
   else
   {
     FILESYSTEM.begin(true);
-      DEBUG_PORT.print("Mount true\n");
+    DEBUG_PORT.print("Mount true\n");
   }
-
-
-
-
 
   //SERVER INIT
 
@@ -255,7 +318,8 @@ void setupFSBrowser(void) {
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
   server.on("/fileRead", HTTP_GET, []() {
-    if (!handleFileRead(server.arg(0))) {
+    if (!handleFileRead(server.arg(0)))
+    {
       server.send(404, "text/plain", "FileNotFound");
     }
   });
@@ -265,8 +329,10 @@ void setupFSBrowser(void) {
   server.on("/fileDelete", handleFileDelete);
   //first callback is called after the request has ended with all parsed arguments
   //second callback handles file uploads at that location
-  server.on("/file", HTTP_POST, []() {
-    server.send(200, "text/plain", "");
-    DEBUG_PORT.println("File post");
-  }, handleFileUpload);
+  server.on(
+      "/file", HTTP_POST, []() {
+        server.send(200, "text/plain", "");
+        DEBUG_PORT.println("File post");
+      },
+      handleFileUpload);
 }

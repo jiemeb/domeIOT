@@ -27,7 +27,7 @@ char equ_temp[nombre_sonde];
 void sendDomoticz(String url)
 {
 
-     struct ip4_addr addr;
+     struct esp_ip4_addr addr;
     addr.addr = 0;
 
     esp_err_t err = mdns_query_a(sendToHost, 2000,  &addr);

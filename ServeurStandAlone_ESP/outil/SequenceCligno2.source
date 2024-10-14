@@ -1,0 +1,12 @@
+#define :sortie 02
+         // Pas pris
+:Debut	BM	00
+	RB :sortie
+	TC	1
+	SB	:sortie
+	TC 1
+	
+:fin	EM	00	
+
+	
+

@@ -1,0 +1,20 @@
+#define :toto 05
+         // Pas pris
+:Debut	BM	00
+ IN :toto
+	IN	02	  // IN Bit 0x2
+	XO	88	//Xor Marqueur bit 8 in hexa are HexaValue
+	BF	:fin	//Branchement si Faux
+                    // Autre commentaire
+	IN	02  
+	OT	88	// Copy LCR in Marqueur 2
+	I1	01	// If LCR Iform Bit 1 a 1
+	IL	00	// Complement MCR
+	I0	01	// If LCR a 1 Bit 1 a 0
+:fin	EM	00	
+	BM	01	//Begin Module 1
+	TC	3C	// Attente 1 minutes
+	IC	80	// Send Temperature
+	EM	01	// Fin Module 1
+	
+
